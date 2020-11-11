@@ -62,6 +62,7 @@ exports.turn_off_selected_computer = async (id) => {
     "ESXI_ID",
     hostId[0].ESXI_ID
   );
+  ///sad
   return new Promise((resolve, reject) => {
     const commandToTurnOffComputer = `${TOOL} ${CONNECT_METHOD} ${host[0].ESXI_USER}@${host[0].ESXI_IP} -pw "${host[0].ESXI_PASSWORD}" -batch ${POWER_OFF_METHOD} `;
     cp.exec(
