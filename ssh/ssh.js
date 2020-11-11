@@ -1,0 +1,129 @@
+const cp = require("child_process");
+const { stdout, stderr } = require("process");
+const ESXIController = require("../db/ESXI");
+const VMController = require("../db/VirtualMachines");
+const db = require("../db/db");
+const { realpathSync } = require("fs");
+const { resolve } = require("path");
+
+const exec_options = {
+  cwd: null,
+  env: null,
+  encoding: "utf8",
+  timeout: 0,
+  maxBuffer: 200 * 1024,
+  killSignal: "SIGTERM",
+};
+let tempArr = [];
+//   const ESXI_IP = "192.168.10.170";
+//   const ESXI_USER = "root";
+//   const AUTH = `${ESXI_USER}@${ESXI_IP}`;
+
+const ESXI_GET_MACHINES = "vim-cmd vmsvc/getallvm";
+const CONNECT_METHOD = "-ssh";
+const POWER_ON_METHOD = "vim-cmd vmsvc/power.on";
+const POWER_OFF_METHOD = "vim-cmd vmsvc/power.off";
+const TOOL = "plink.exe ";
+const GET_MACHINE_STATE = "vim-cmd vmsvc/power.getstate";
+
+exports.turn_on_selected_computer = async (id) => {
+  const hostId = await VMController.sqlGet(
+    "VirtualMachines",
+    id,
+    "VMid",
+    "ESXI_ID"
+  );
+  const host = await ESXIController.sqlGetBySpecificValue(
+    "ESXIHosts",
+    "ESXI_ID",
+    hostId[0].ESXI_ID
+  );
+  const commandToTurnOnComputer = `${TOOL} ${CONNECT_METHOD} ${host[0].ESXI_USER}@${host[0].ESXI_IP} -pw "${host[0].ESXI_PASSWORD}" -batch ${POWER_ON_METHOD} `;
+
+  cp.exec(commandToTurnOnComputer + id, exec_options, (err, stdout, stderr) => {
+    return stdout;
+  });
+};
+exports.turn_off_selected_computer = async (id) => {
+  const hostId = await VMController.sqlGet(
+    "VirtualMachines",
+    id,
+    "VMid",
+    "ESXI_ID"
+  );
+  const VMname = await VMController.sqlGet(
+    "VirtualMachines",
+    id,
+    "VMid",
+    "VM_name"
+  );
+  const host = await ESXIController.sqlGetBySpecificValue(
+    "ESXIHosts",
+    "ESXI_ID",
+    hostId[0].ESXI_ID
+  );
+  return new Promise((resolve, reject) => {
+    const commandToTurnOffComputer = `${TOOL} ${CONNECT_METHOD} ${host[0].ESXI_USER}@${host[0].ESXI_IP} -pw "${host[0].ESXI_PASSWORD}" -batch ${POWER_OFF_METHOD} `;
+    cp.exec(
+      commandToTurnOffComputer + id,
+      exec_options,
+      (err, stdout, stderr) => {
+        resolve(stdout + VMname[0].VM_name + " -" + id);
+      }
+    );
+  });
+};
+//s
+
+exports.get_vm_in_host = (host) => {
+  const commandToGetMachines = `${TOOL} ${CONNECT_METHOD} ${host.ESXI_USER}@${host.ESXI_IP} -pw "${host.ESXI_PASSWORD}" -batch ${ESXI_GET_MACHINES} `;
+  cp.exec(commandToGetMachines, exec_options, (err, stdout, stderr) => {
+    for (let index = 0; index < stdout.length; index++) {
+      const element = stdout.split("\n");
+      const currentPosition = index;
+
+      if (currentPosition > 0 && currentPosition < element.length - 1) {
+        //console.log(element[index]);
+        tempArr.push(element[index]);
+      }
+    }
+
+    tempArr.forEach((el) => {
+      const computer = {};
+      for (let index = 0; index < el.length; index++) {
+        el = el.replace(" ", "");
+      }
+
+      const temp = el.split("");
+      let computerName = "";
+      for (let index = 0; index < temp.length; index++) {
+        if (index == 0) {
+          computer.id = temp[index];
+        } else if (index > 0) {
+          if (temp[index] === "[") {
+            break;
+          }
+          computerName = computerName + temp[index];
+        }
+      }
+      computer.name = computerName;
+      //   tempCompters.push(computer);
+      //   hostProperties.VMList.push(computer);
+      const tempComputerID = Number(computer.id);
+
+      VMController.sqlInsertMachineVM(host.id, tempComputerID, computer.name);
+    });
+  });
+};
+exports.get_vm_status = (host, vmId) => {
+  const commandToGetStatus = `${TOOL} ${CONNECT_METHOD} ${host.ESXI_USER}@${host.ESXI_IP} -pw "${host.ESXI_PASSWORD}" -batch ${GET_MACHINE_STATE} ${vmId}`;
+  return new Promise((resolve, reject) => {
+    cp.exec(commandToGetStatus, exec_options, (err, stdout, stderr) => {
+      if (stdout.includes("Powered on")) {
+        resolve(1);
+      } else {
+        resolve(0);
+      }
+    });
+  });
+};
