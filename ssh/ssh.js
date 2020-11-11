@@ -83,7 +83,7 @@ exports.get_vm_in_host = (host) => {
       const currentPosition = index;
 
       if (currentPosition > 0 && currentPosition < element.length - 1) {
-        //console.log(element[index]);
+        //console.log(elsdfsdfsfment[index]);
         tempArr.push(element[index]);
       }
     }
