@@ -4,6 +4,7 @@ var router = express.Router();
 const ssh = require("../ssh/ssh");
 const VMController = require("../db/VirtualMachines");
 const ESXIController = require("../db/ESXI");
+const VMControl = require("../db/VirtualMachines");
 router.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "http://localhost:3000"); // update to match the domain you will make the request from
 
@@ -23,24 +24,26 @@ router.use((req, res, next) => {
 });
 
 router.get("/", async (req, res) => {
-  const VMs = await VMController.sqlGetAllVM(
-    "VirtualMachines",
+  // const VMs = await VMController.sqlGetAllVM(
+  //   "VirtualMachines",
 
-    "*"
-  );
-  const obj = {
-    ESXI_ID: 26,
-    ESXI_IP: "192.168.0.31",
-    ESXI_USER: "root",
-    ESXI_PASSWORD: "Aa123456&*",
-  };
-  const smth = await VMController.getVMCurrentStatus(
-    "VirtualMachines",
+  //   "*"
+  // );
 
-    "*"
-  );
-  //ssh.getVMStatus(obj, 3);
-  res.send(VMs);
+  const PreRunvms = await VMController.joinVMandESXI("ESXI_ID");
+
+  PreRunvms.forEach(async (element) => {
+    const host = await ESXIController.sqlGetBySpecificValue(
+      "ESXIHosts",
+      "ESXI_IP",
+      element.ESXI_IP
+    );
+    ssh.get_vm_status(host[0], element.VMid);
+  });
+
+  //
+  const vms = await VMController.joinVMandESXI("ESXI_ID");
+  res.send(vms);
 });
 
 router.post("/insertESXI", async (req, res) => {
@@ -53,6 +56,15 @@ router.post("/insertESXI", async (req, res) => {
   );
   ESXI_PROPS.id = newID;
   ssh.get_vm_in_host(ESXI_PROPS);
+  ESXI_PROPS.id = newID;
+  const VMS = await VMController.sqlGet(
+    "VirtualMachines",
+    "ESXI_ID",
+    ESXI_PROPS.id,
+    "*"
+  );
+  ESXI_PROPS.vms = VMS;
+  res.send(ESXI_PROPS);
 });
 router.post("/powerOnOff", async (req, res) => {
   let response = null;

@@ -84,7 +84,6 @@ exports.get_vm_in_host = (host) => {
       const currentPosition = index;
 
       if (currentPosition > 0 && currentPosition < element.length - 1) {
-        //console.log(elsdfsdfsfment[index]);
         tempArr.push(element[index]);
       }
     }
@@ -92,24 +91,34 @@ exports.get_vm_in_host = (host) => {
     tempArr.forEach((el) => {
       const computer = {};
       for (let index = 0; index < el.length; index++) {
-        el = el.replace(" ", "");
+        el = el.replace(" ", "#");
       }
 
-      const temp = el.split("");
       let computerName = "";
-      for (let index = 0; index < temp.length; index++) {
-        if (index == 0) {
-          computer.id = temp[index];
-        } else if (index > 0) {
-          if (temp[index] === "[") {
-            break;
-          }
-          computerName = computerName + temp[index];
+
+      for (let index = 0; index < el.length; index++) {
+        if (el[index] === "[") {
+          break;
+        }
+        computerName = computerName + el[index];
+      }
+
+      let id = "";
+
+      for (let index = 0; index < computerName.length; index++) {
+        if (computerName[index] === "#") {
+          break;
+        } else {
+          id = id + computerName[index];
         }
       }
+
+      computerName = computerName.replace(id, "");
+      computerName = computerName.replace(/#/g, "");
+
       computer.name = computerName;
-      //   tempCompters.push(computer);
-      //   hostProperties.VMList.push(computer);
+      computer.id = id;
+
       const tempComputerID = Number(computer.id);
 
       VMController.sqlInsertMachineVM(host.id, tempComputerID, computer.name);
@@ -122,8 +131,10 @@ exports.get_vm_status = (host, vmId) => {
     cp.exec(commandToGetStatus, exec_options, (err, stdout, stderr) => {
       if (stdout.includes("Powered on")) {
         resolve(1);
+        VMController.setVMStatus(host.ESXI_ID, vmId, 1);
       } else {
         resolve(0);
+        VMController.setVMStatus(host.ESXI_ID, vmId, 0);
       }
     });
   });

@@ -1,5 +1,6 @@
+const { resolve } = require("path");
 const ESXIController = require("./db");
-
+const ESXIHosts = "ESXIHosts";
 //inserting a VM
 ESXIController.sqlInsertMachine = async (ESXI_IP, ESXI_USER, ESXI_PASSWORD) => {
   const ESXI_ID = await ESXIController.getIDNum("ESXIHosts", "ESXI_ID");
@@ -14,7 +15,7 @@ ESXIController.sqlInsertMachine = async (ESXI_IP, ESXI_USER, ESXI_PASSWORD) => {
 };
 //getting all virtual machine by param;
 ESXIController.sqlGetBySpecificValue = (table, collumn, value) => {
-  const sentence = `SELECT * FROM ${table} WHERE ${collumn}=${value};`;
+  const sentence = `SELECT * FROM ${table} WHERE ${collumn}="${value}";`;
 
   return new Promise((resolve, reject) => {
     ESXIController.all(sentence, (err, data) => {
