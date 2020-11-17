@@ -5,6 +5,17 @@ const ssh = require("../ssh/ssh");
 const VMController = require("../db/VirtualMachines");
 const ESXIController = require("../db/ESXI");
 const VMControl = require("../db/VirtualMachines");
+
+const initDriver = () => {
+  return "../chromeDriver/chromeDriver";
+};
+
+const getParam = () => {
+  const chromeDriver = require(initDriver());
+
+  return chromeDriver;
+};
+
 router.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "http://localhost:3000"); // update to match the domain you will make the request from
 
@@ -76,6 +87,21 @@ router.post("/powerOnOff", async (req, res) => {
   }
 
   res.send(respose);
+});
+
+router.get("/gethostUi", (req, res) => {
+  // driver.get(
+
+  const chromeDriver = getParam();
+
+  chromeDriver.get("https://192.168.10.170/ui/#/login");
+  chromeDriver.click("#details-button");
+  chromeDriver.click("#proceed-link");
+
+  chromeDriver.sendKeys("input#username", "root");
+
+  // chromeDriver.sendKeys("Aa123456&*", "#password");
+  // chromeDriver.click("#submit");
 });
 
 module.exports = router;
