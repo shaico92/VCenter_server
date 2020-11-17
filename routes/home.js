@@ -100,7 +100,7 @@ router.get("/gethostUi", (req, res) => {
 
   chromeDriver.sendKeys("input#username", "root");
 
-  // chromeDriver.sendKeys("Aa123456&*", "#password");
+  chromeDriver.sendKeys("Aa123456&*", "#password");
   // chromeDriver.click("#submit");
 });
 
