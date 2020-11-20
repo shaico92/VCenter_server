@@ -5,10 +5,9 @@ const ssh = require("../ssh/ssh");
 const VMController = require("../db/VirtualMachines");
 const ESXIController = require("../db/ESXI");
 const VMControl = require("../db/VirtualMachines");
-const chromeDriver = require("../chromeDriver/chromeDriver");
+
 const { route } = require("express/lib/router");
 const { threadId } = require("worker_threads");
-const chrome = require("../chromeDriver/chromeDriver");
 
 router.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "http://localhost:3000"); // update to match the domain you will make the request from
@@ -28,7 +27,8 @@ router.use((req, res, next) => {
   next();
 });
 
-const enableSSH = () => {
+const enableSSH = (username, password) => {
+  const chromeDriver = require("../chromeDriver/chromeDriver");
   let elm;
   chromeDriver.get("https://192.168.10.170/ui/#/login");
 
@@ -80,7 +80,7 @@ router.get("/", async (req, res) => {
 
 router.post("/insertESXI", async (req, res) => {
   const ESXI_PROPS = req.body;
-
+  await enableSSH(ESXI_PROPS.ESXI_USER, ESXI_PROPS.ESXI_PASSWORD);
   const newID = await ESXIController.sqlInsertMachine(
     ESXI_PROPS.ESXI_IP,
     ESXI_PROPS.ESXI_USER,
