@@ -5,16 +5,10 @@ const ssh = require("../ssh/ssh");
 const VMController = require("../db/VirtualMachines");
 const ESXIController = require("../db/ESXI");
 const VMControl = require("../db/VirtualMachines");
-
-const initDriver = () => {
-  return "../chromeDriver/chromeDriver";
-};
-
-const getParam = () => {
-  const chromeDriver = require(initDriver());
-
-  return chromeDriver;
-};
+const chromeDriver = require("../chromeDriver/chromeDriver");
+const { route } = require("express/lib/router");
+const { threadId } = require("worker_threads");
+const chrome = require("../chromeDriver/chromeDriver");
 
 router.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "http://localhost:3000"); // update to match the domain you will make the request from
@@ -33,6 +27,33 @@ router.use((req, res, next) => {
   }
   next();
 });
+
+const enableSSH = () => {
+  let elm;
+  chromeDriver.get("https://192.168.10.170/ui/#/login");
+
+  chromeDriver.sendKeys("username", "root");
+  chromeDriver.sendKeys("password", "Aa123456&*");
+
+  elm = chromeDriver.findElmByid(`submit`);
+
+  chromeDriver.clickElm(elm);
+
+  elm = chromeDriver.findElmBycss("a[title='Actions for this host']");
+  chromeDriver.clickElm(elm);
+
+  elm = chromeDriver.findElmBycss("span[class='esx-icon-host-services']");
+  chromeDriver.hoverTo(elm);
+
+  elm = chromeDriver.findElmBycss("span[class='esx-icon-service-ssh']", 1);
+  chromeDriver.hoverTo(elm);
+  chromeDriver.clickBtn("span[class='esx-icon-service-ssh']");
+  chromeDriver.clickElm(elm);
+
+  return 1;
+};
+
+const enableSSH_2 = () => {};
 
 router.get("/", async (req, res) => {
   // const VMs = await VMController.sqlGetAllVM(
@@ -90,18 +111,9 @@ router.post("/powerOnOff", async (req, res) => {
 });
 
 router.get("/gethostUi", (req, res) => {
-  // driver.get(
+  enableSSH();
 
-  const chromeDriver = getParam();
-
-  chromeDriver.get("https://192.168.10.170/ui/#/login");
-  chromeDriver.click("#details-button");
-  chromeDriver.click("#proceed-link");
-
-  chromeDriver.sendKeys("input#username", "root");
-
-  chromeDriver.sendKeys("Aa123456&*", "#password");
-  // chromeDriver.click("#submit");
+  res.send("asdmomo");
 });
 
 module.exports = router;
