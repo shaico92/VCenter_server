@@ -5,6 +5,7 @@ const VMController = require("../db/VirtualMachines");
 const db = require("../db/db");
 const { realpathSync } = require("fs");
 const { resolve } = require("path");
+const { exec } = require("../db/db");
 
 const exec_options = {
   cwd: null,
@@ -76,6 +77,19 @@ exports.turn_off_selected_computer = async (id) => {
 };
 //s
 
+exports.check_ssh_enabled = (host) => {
+  const check_ssh_enabled = `${TOOL} ${CONNECT_METHOD} ${host.ESXI_USER}@${host.ESXI_IP} -pw "${host.ESXI_PASSWORD}"`;
+  cp.exec(check_ssh_enabled, exec_options, (err, stdout, stderr) => {
+    if (err) {
+      console.log(stderr);
+      return 0;
+    } else {
+      console.log(stdout);
+      return 1;
+    }
+  });
+};
+
 exports.get_vm_in_host = (host) => {
   const commandToGetMachines = `${TOOL} ${CONNECT_METHOD} ${host.ESXI_USER}@${host.ESXI_IP} -pw "${host.ESXI_PASSWORD}" -batch ${ESXI_GET_MACHINES} `;
   cp.exec(commandToGetMachines, exec_options, (err, stdout, stderr) => {
@@ -126,15 +140,19 @@ exports.get_vm_in_host = (host) => {
   });
 };
 exports.get_vm_status = (host, vmId) => {
-  const commandToGetStatus = `${TOOL} ${CONNECT_METHOD} ${host.ESXI_USER}@${host.ESXI_IP} -pw "${host.ESXI_PASSWORD}" -batch ${GET_MACHINE_STATE} ${vmId}`;
   return new Promise((resolve, reject) => {
+    const commandToGetStatus = `${TOOL} ${CONNECT_METHOD} ${host.ESXI_USER}@${host.ESXI_IP} -pw "${host.ESXI_PASSWORD}" -batch ${GET_MACHINE_STATE} ${vmId}`;
     cp.exec(commandToGetStatus, exec_options, (err, stdout, stderr) => {
-      if (stdout.includes("Powered on")) {
-        resolve(1);
-        VMController.setVMStatus(host.ESXI_ID, vmId, 1);
+      if (err) {
+        console.log(stderr);
       } else {
-        resolve(0);
-        VMController.setVMStatus(host.ESXI_ID, vmId, 0);
+        if (stdout.includes("Powered on")) {
+          VMController.setVMStatus(host.ESXI_ID, vmId, 1);
+          resolve(1);
+        } else {
+          VMController.setVMStatus(host.ESXI_ID, vmId, 0);
+          resolve(0);
+        }
       }
     });
   });

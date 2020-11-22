@@ -27,33 +27,33 @@ router.use((req, res, next) => {
   next();
 });
 
-const enableSSH = (username, password) => {
-  const chromeDriver = require("../chromeDriver/chromeDriver");
-  let elm;
-  chromeDriver.get("https://192.168.10.170/ui/#/login");
+const enableSSH = (hostIp, username, password) => {
+  return new Promise((resolve) => {
+    const chromeDriver = require("../chromeDriver/chromeDriver");
+    let elm;
 
-  chromeDriver.sendKeys("username", "root");
-  chromeDriver.sendKeys("password", "Aa123456&*");
+    chromeDriver.get(`https://${hostIp}/ui/#/login`);
 
-  elm = chromeDriver.findElmByid(`submit`);
+    chromeDriver.sendKeys("username", username);
+    chromeDriver.sendKeys("password", password);
 
-  chromeDriver.clickElm(elm);
+    elm = chromeDriver.findElmByid(`submit`);
 
-  elm = chromeDriver.findElmBycss("a[title='Actions for this host']");
-  chromeDriver.clickElm(elm);
+    chromeDriver.clickElm(elm);
 
-  elm = chromeDriver.findElmBycss("span[class='esx-icon-host-services']");
-  chromeDriver.hoverTo(elm);
+    elm = chromeDriver.findElmBycss("a[title='Actions for this host']");
+    chromeDriver.clickElm(elm);
 
-  elm = chromeDriver.findElmBycss("span[class='esx-icon-service-ssh']", 1);
-  chromeDriver.hoverTo(elm);
-  chromeDriver.clickBtn("span[class='esx-icon-service-ssh']");
-  chromeDriver.clickElm(elm);
+    elm = chromeDriver.findElmBycss("span[class='esx-icon-host-services']");
+    chromeDriver.hoverTo(elm);
 
-  return 1;
+    elm = chromeDriver.findElmBycss("span[class='esx-icon-service-ssh']", 1);
+    chromeDriver.hoverTo(elm);
+    chromeDriver.clickBtn("span[class='esx-icon-service-ssh']");
+    chromeDriver.clickElm(elm);
+    resolve(1);
+  });
 };
-
-const enableSSH_2 = () => {};
 
 router.get("/", async (req, res) => {
   // const VMs = await VMController.sqlGetAllVM(
@@ -70,7 +70,12 @@ router.get("/", async (req, res) => {
       "ESXI_IP",
       element.ESXI_IP
     );
-    ssh.get_vm_status(host[0], element.VMid);
+    const isSshEnabled = ssh.check_ssh_enabled(host[0]);
+    if (isSshEnabled === 1) {
+      ssh.get_vm_status(host[0], element.VMid);
+    } else {
+      console.log("cant connect by ssh to get current status");
+    }
   });
 
   //
@@ -78,25 +83,63 @@ router.get("/", async (req, res) => {
   res.send(vms);
 });
 
+router.post("/deleteHost", async (req, res) => {
+  const whoToDelete = req.body;
+  console.log(whoToDelete);
+
+  const host = await ESXIController.sqlGetBySpecificValue(
+    "ESXIHosts",
+    "ESXI_IP",
+    whoToDelete.hostip
+  );
+});
+
 router.post("/insertESXI", async (req, res) => {
+  console.log("now in /insertESXI");
   const ESXI_PROPS = req.body;
-  await enableSSH(ESXI_PROPS.ESXI_USER, ESXI_PROPS.ESXI_PASSWORD);
-  const newID = await ESXIController.sqlInsertMachine(
-    ESXI_PROPS.ESXI_IP,
-    ESXI_PROPS.ESXI_USER,
-    ESXI_PROPS.ESXI_PASSWORD
-  );
-  ESXI_PROPS.id = newID;
-  ssh.get_vm_in_host(ESXI_PROPS);
-  ESXI_PROPS.id = newID;
-  const VMS = await VMController.sqlGet(
-    "VirtualMachines",
-    "ESXI_ID",
-    ESXI_PROPS.id,
-    "*"
-  );
-  ESXI_PROPS.vms = VMS;
-  res.send(ESXI_PROPS);
+  const isSshEnabled = ssh.check_ssh_enabled(ESXI_PROPS);
+  if (isSshEnabled === 0) {
+    const ssh_enabled = await enableSSH(
+      ESXI_PROPS.ESXI_IP,
+      ESXI_PROPS.ESXI_USER,
+      ESXI_PROPS.ESXI_PASSWORD
+    );
+    if (ssh_enabled === 1) {
+      const newID = await ESXIController.sqlInsertMachine(
+        ESXI_PROPS.ESXI_IP,
+        ESXI_PROPS.ESXI_USER,
+        ESXI_PROPS.ESXI_PASSWORD
+      );
+      ESXI_PROPS.id = newID;
+      ssh.get_vm_in_host(ESXI_PROPS);
+      ESXI_PROPS.id = newID;
+      const VMS = await VMController.sqlGet(
+        "VirtualMachines",
+        "ESXI_ID",
+        ESXI_PROPS.id,
+        "*"
+      );
+      ESXI_PROPS.vms = VMS;
+      res.send(ESXI_PROPS);
+    }
+  } else {
+    const newID = await ESXIController.sqlInsertMachine(
+      ESXI_PROPS.ESXI_IP,
+      ESXI_PROPS.ESXI_USER,
+      ESXI_PROPS.ESXI_PASSWORD
+    );
+    ESXI_PROPS.id = newID;
+    ssh.get_vm_in_host(ESXI_PROPS);
+    ESXI_PROPS.id = newID;
+    const VMS = await VMController.sqlGet(
+      "VirtualMachines",
+      "ESXI_ID",
+      ESXI_PROPS.id,
+      "*"
+    );
+    ESXI_PROPS.vms = VMS;
+    res.send(ESXI_PROPS);
+  }
 });
 router.post("/powerOnOff", async (req, res) => {
   let response = null;
@@ -111,8 +154,6 @@ router.post("/powerOnOff", async (req, res) => {
 });
 
 router.get("/gethostUi", (req, res) => {
-  enableSSH();
-
   res.send("asdmomo");
 });
 

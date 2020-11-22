@@ -1,6 +1,7 @@
 const { resolve } = require("path");
 const ESXIController = require("./db");
 const ESXIHosts = "ESXIHosts";
+const table = "ESXIHosts";
 //inserting a VM
 ESXIController.sqlInsertMachine = async (ESXI_IP, ESXI_USER, ESXI_PASSWORD) => {
   const ESXI_ID = await ESXIController.getIDNum("ESXIHosts", "ESXI_ID");
@@ -47,7 +48,7 @@ ESXIController.getIDNum = (table, collumn) => {
             resolve(biggestId);
           }
         });
-        console.log(biggestId);
+
         resolve(biggestId);
       }
       {
