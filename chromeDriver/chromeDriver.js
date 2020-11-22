@@ -3,7 +3,7 @@ const webdriver = require("selenium-webdriver"),
   By = webdriver.By,
   until = webdriver.until;
 
-const WAIT = 40000;
+const WAIT = 60000;
 exports.chromeO = require("selenium-webdriver/chrome");
 const sleep = require("thread-sleep");
 const options = new this.chromeO.Options();
@@ -43,7 +43,7 @@ chrome.clickBtn = (cssSelector) => {
 };
 
 chrome.clickElm = (elm) => {
-  console.log(elm);
+  
   elm.click();
 };
 chrome.clickAndMove = (elm) => {
@@ -57,7 +57,8 @@ chrome.sendKeys = (id, keys) => {
 
 //Actions for this host
 chrome.findElmBycss = (cssSelector, val) => {
-  let elm = null;
+  return new Promise((resolve)=>{
+    let elm = null;
   if (val) {
     elm = chrome
       .wait(until.elementLocated(By.css(cssSelector)), WAIT)
@@ -66,12 +67,14 @@ chrome.findElmBycss = (cssSelector, val) => {
           chrome.executeScript(
             `document.querySelector("span[class='esx-icon-service-ssh']").click()`
           );
+          resolve(1);
         }
       });
   } else {
     elm = chrome.wait(until.elementLocated(By.css(cssSelector)), WAIT);
   }
-  return elm;
+  
+  })
 };
 
 module.exports = chrome;

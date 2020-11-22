@@ -1,5 +1,5 @@
 const cp = require("child_process");
-const { stdout, stderr } = require("process");
+const { stdout, stderr, stdin } = require("process");
 const ESXIController = require("../db/ESXI");
 const VMController = require("../db/VirtualMachines");
 const db = require("../db/db");
@@ -16,9 +16,7 @@ const exec_options = {
   killSignal: "SIGTERM",
 };
 let tempArr = [];
-//   const ESXI_IP = "192.168.10.170";
-//   const ESXI_USER = "root";
-//   const AUTH = `${ESXI_USER}@${ESXI_IP}`;
+
 
 const ESXI_GET_MACHINES = "vim-cmd vmsvc/getallvm";
 const CONNECT_METHOD = "-ssh";
@@ -78,16 +76,18 @@ exports.turn_off_selected_computer = async (id) => {
 //s
 
 exports.check_ssh_enabled = (host) => {
-  const check_ssh_enabled = `${TOOL} ${CONNECT_METHOD} ${host.ESXI_USER}@${host.ESXI_IP} -pw "${host.ESXI_PASSWORD}"`;
+  return new Promise((resolve)=>{
+    const check_ssh_enabled = `${TOOL} ${CONNECT_METHOD} ${host.ESXI_USER}@${host.ESXI_IP} -pw "${host.ESXI_PASSWORD}"`;
   cp.exec(check_ssh_enabled, exec_options, (err, stdout, stderr) => {
     if (err) {
       console.log(stderr);
-      return 0;
+      resolve(0);
     } else {
       console.log(stdout);
-      return 1;
+      resolve(1);
     }
   });
+  })
 };
 
 exports.get_vm_in_host = (host) => {
@@ -139,6 +139,27 @@ exports.get_vm_in_host = (host) => {
     });
   });
 };
+
+
+exports.firstAuth=(host)=>{
+  return new Promise((resolve)=>{
+    const connect = `${TOOL} ${CONNECT_METHOD} ${host.ESXI_USER}@${host.ESXI_IP} -pw "${host.ESXI_PASSWORD}"`;
+
+    cp.exec(connect,exec_options,(err,stdout,stderr)=>{
+      if (err) {
+        console.log(stderr);
+      }else{
+          if (stdout.includes("Store key in cache? (y/n)")) {
+            stdin("y");
+          }
+      }
+    })
+
+
+  })
+}
+
+
 exports.get_vm_status = (host, vmId) => {
   return new Promise((resolve, reject) => {
     const commandToGetStatus = `${TOOL} ${CONNECT_METHOD} ${host.ESXI_USER}@${host.ESXI_IP} -pw "${host.ESXI_PASSWORD}" -batch ${GET_MACHINE_STATE} ${vmId}`;

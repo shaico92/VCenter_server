@@ -28,7 +28,7 @@ router.use((req, res, next) => {
 });
 
 const enableSSH = (hostIp, username, password) => {
-  return new Promise((resolve) => {
+  return new Promise(async(resolve) => {
     const chromeDriver = require("../chromeDriver/chromeDriver");
     let elm;
 
@@ -41,17 +41,20 @@ const enableSSH = (hostIp, username, password) => {
 
     chromeDriver.clickElm(elm);
 
-    elm = chromeDriver.findElmBycss("a[title='Actions for this host']");
-    chromeDriver.clickElm(elm);
+     elm = chromeDriver.findElmBycss("a[title='Actions for this host']");
+     chromeDriver.clickElm(elm);
 
-    elm = chromeDriver.findElmBycss("span[class='esx-icon-host-services']");
-    chromeDriver.hoverTo(elm);
+    // elm = chromeDriver.findElmBycss("span[class='esx-icon-host-services']");
+    // chromeDriver.hoverTo(elm);
 
-    elm = chromeDriver.findElmBycss("span[class='esx-icon-service-ssh']", 1);
-    chromeDriver.hoverTo(elm);
-    chromeDriver.clickBtn("span[class='esx-icon-service-ssh']");
-    chromeDriver.clickElm(elm);
-    resolve(1);
+  const sshEnabled= await    chromeDriver.findElmBycss("span[class='esx-icon-service-ssh']", 1);
+    
+    if (sshEnabled===1) {
+      chromeDriver.quit();
+      resolve(1);  
+    }
+    
+    
   });
 };
 
@@ -70,11 +73,13 @@ router.get("/", async (req, res) => {
       "ESXI_IP",
       element.ESXI_IP
     );
-    const isSshEnabled = ssh.check_ssh_enabled(host[0]);
+    const isSshEnabled =await ssh.check_ssh_enabled(host[0]);
     if (isSshEnabled === 1) {
       ssh.get_vm_status(host[0], element.VMid);
     } else {
-      console.log("cant connect by ssh to get current status");
+      
+      throw new Error("cant connect by ssh to get current status");
+      res.send(`please enable ssh for ${host[0].ESXI_IP}`);
     }
   });
 
@@ -85,32 +90,50 @@ router.get("/", async (req, res) => {
 
 router.post("/deleteHost", async (req, res) => {
   const whoToDelete = req.body;
-  console.log(whoToDelete);
-
+  
+  
+  
+  
+  
+  
   const host = await ESXIController.sqlGetBySpecificValue(
     "ESXIHosts",
     "ESXI_IP",
-    whoToDelete.hostip
+    
   );
+  console.log(host);
+  if (host) {
+    VMControl.deleteRow("ESXI_ID",host.ESXI_ID);
+  ESXIController.deleteRow("ESXI_ID",whoToDelete.hostip);
+  }else{
+
+  }
+  res.send(`${whoToDelete.hostip} deleted from records`);
 });
 
 router.post("/insertESXI", async (req, res) => {
   console.log("now in /insertESXI");
   const ESXI_PROPS = req.body;
-  const isSshEnabled = ssh.check_ssh_enabled(ESXI_PROPS);
+  const isSshEnabled =await ssh.check_ssh_enabled(ESXI_PROPS);
   if (isSshEnabled === 0) {
+    console.log("ssh is not enabled now enabling please wait");
     const ssh_enabled = await enableSSH(
       ESXI_PROPS.ESXI_IP,
       ESXI_PROPS.ESXI_USER,
       ESXI_PROPS.ESXI_PASSWORD
+      
     );
     if (ssh_enabled === 1) {
+      console.log("ssh is now enabled continue");
       const newID = await ESXIController.sqlInsertMachine(
         ESXI_PROPS.ESXI_IP,
         ESXI_PROPS.ESXI_USER,
         ESXI_PROPS.ESXI_PASSWORD
       );
       ESXI_PROPS.id = newID;
+
+        ssh.firstAuth(ESXI_PROPS);
+
       ssh.get_vm_in_host(ESXI_PROPS);
       ESXI_PROPS.id = newID;
       const VMS = await VMController.sqlGet(
@@ -121,14 +144,18 @@ router.post("/insertESXI", async (req, res) => {
       );
       ESXI_PROPS.vms = VMS;
       res.send(ESXI_PROPS);
+      
+      res.end()
     }
   } else {
+    console.log("SSH enabled without selenium inserting host");
     const newID = await ESXIController.sqlInsertMachine(
       ESXI_PROPS.ESXI_IP,
       ESXI_PROPS.ESXI_USER,
       ESXI_PROPS.ESXI_PASSWORD
     );
     ESXI_PROPS.id = newID;
+    ssh.firstAuth(ESXI_PROPS);
     ssh.get_vm_in_host(ESXI_PROPS);
     ESXI_PROPS.id = newID;
     const VMS = await VMController.sqlGet(
@@ -139,6 +166,7 @@ router.post("/insertESXI", async (req, res) => {
     );
     ESXI_PROPS.vms = VMS;
     res.send(ESXI_PROPS);
+    res.end()
   }
 });
 router.post("/powerOnOff", async (req, res) => {
@@ -153,8 +181,6 @@ router.post("/powerOnOff", async (req, res) => {
   res.send(respose);
 });
 
-router.get("/gethostUi", (req, res) => {
-  res.send("asdmomo");
-});
+
 
 module.exports = router;

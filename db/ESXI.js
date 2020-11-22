@@ -14,6 +14,12 @@ ESXIController.sqlInsertMachine = async (ESXI_IP, ESXI_USER, ESXI_PASSWORD) => {
   console.log(`${ESXI_IP} inserted to ESXIHosts db`);
   return ESXI_ID + 1;
 };
+
+ESXIController.deleteRow = (collumn,value)=>{
+  const deleteSentence = `DELETE FROM ${ESXIHosts} WHERE ${collumn} = "${value}"`;
+  ESXIController.exec(deleteSentence);
+}
+
 //getting all virtual machine by param;
 ESXIController.sqlGetBySpecificValue = (table, collumn, value) => {
   const sentence = `SELECT * FROM ${table} WHERE ${collumn}="${value}";`;
