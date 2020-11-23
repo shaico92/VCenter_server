@@ -24,10 +24,3 @@ app.use(home);
 app.listen(4000, () => {
   console.log("Server started");
 });
-
-
-const srv = app.listen(8080, () => {
-  console.log("Server cosing :(");
-  srv.close();
-});
-

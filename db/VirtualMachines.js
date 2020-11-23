@@ -9,18 +9,18 @@ const VM_name = "VM_name";
 const VMid = "VMid";
 const vmStatus = "vmStatus";
 //inserting a VM
-VMControl.sqlInsertMachineVM = (ESXI_ID, VMid, VM_name) => {
-  const insert = `INSERT INTO VirtualMachines (ESXI_ID,VMid,VM_name,vmStatus) VALUES(${ESXI_ID}, ${VMid}, "${VM_name}",${0})`;
+VMControl.sqlInsertMachineVM = (ESXI_ID, VMid, VM_name, status) => {
+  const insert = `INSERT INTO VirtualMachines (ESXI_ID,VMid,VM_name,vmStatus) VALUES(${ESXI_ID}, ${VMid}, "${VM_name}",${status})`;
 
   VMControl.exec(insert);
   console.log(`${ESXI_ID} ${VMid}, "${VM_name}" inserted to db`);
 };
 
 //DELETING ROWS WITH SPECIFIC VALUES
-VMControl.deleteRow = (collumn,value)=>{
+VMControl.deleteRow = (collumn, value) => {
   const deleteSentence = `DELETE FROM ${VMTable} WHERE ${collumn} = "${value}"`;
   ESXIController.exec(deleteSentence);
-}
+};
 
 //getting all virtual machine by param;
 VMControl.sqlGet = async (table, collumn, value, paramToget) => {

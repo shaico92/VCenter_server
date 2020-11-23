@@ -6,6 +6,7 @@ const db = require("../db/db");
 const { realpathSync } = require("fs");
 const { resolve } = require("path");
 const { exec } = require("../db/db");
+const { SIGINT } = require("constants");
 
 const exec_options = {
   cwd: null,
@@ -16,7 +17,6 @@ const exec_options = {
   killSignal: "SIGTERM",
 };
 let tempArr = [];
-
 
 const ESXI_GET_MACHINES = "vim-cmd vmsvc/getallvm";
 const CONNECT_METHOD = "-ssh";
@@ -33,7 +33,6 @@ exports.turn_on_selected_computer = async (id) => {
     "ESXI_ID"
   );
   const host = await ESXIController.sqlGetBySpecificValue(
-    "ESXIHosts",
     "ESXI_ID",
     hostId[0].ESXI_ID
   );
@@ -57,7 +56,6 @@ exports.turn_off_selected_computer = async (id) => {
     "VM_name"
   );
   const host = await ESXIController.sqlGetBySpecificValue(
-    "ESXIHosts",
     "ESXI_ID",
     hostId[0].ESXI_ID
   );
@@ -76,21 +74,22 @@ exports.turn_off_selected_computer = async (id) => {
 //s
 
 exports.check_ssh_enabled = (host) => {
-  return new Promise((resolve)=>{
+  return new Promise((resolve) => {
     const check_ssh_enabled = `${TOOL} ${CONNECT_METHOD} ${host.ESXI_USER}@${host.ESXI_IP} -pw "${host.ESXI_PASSWORD}"`;
-  cp.exec(check_ssh_enabled, exec_options, (err, stdout, stderr) => {
-    if (err) {
-      console.log(stderr);
-      resolve(0);
-    } else {
-      console.log(stdout);
-      resolve(1);
-    }
+    cp.exec(check_ssh_enabled, exec_options, (err, stdout, stderr) => {
+      if (err) {
+        console.log(stderr);
+        resolve(0);
+      } else {
+        console.log(stdout);
+        resolve(1);
+      }
+    });
   });
-  })
 };
 
 exports.get_vm_in_host = (host) => {
+  console.log(host);
   const commandToGetMachines = `${TOOL} ${CONNECT_METHOD} ${host.ESXI_USER}@${host.ESXI_IP} -pw "${host.ESXI_PASSWORD}" -batch ${ESXI_GET_MACHINES} `;
   cp.exec(commandToGetMachines, exec_options, (err, stdout, stderr) => {
     for (let index = 0; index < stdout.length; index++) {
@@ -102,7 +101,7 @@ exports.get_vm_in_host = (host) => {
       }
     }
 
-    tempArr.forEach((el) => {
+    tempArr.forEach(async (el) => {
       const computer = {};
       for (let index = 0; index < el.length; index++) {
         el = el.replace(" ", "#");
@@ -134,31 +133,33 @@ exports.get_vm_in_host = (host) => {
       computer.id = id;
 
       const tempComputerID = Number(computer.id);
-
-      VMController.sqlInsertMachineVM(host.id, tempComputerID, computer.name);
+      const VMStatus = await this.get_vm_status(host, tempComputerID);
+      VMController.sqlInsertMachineVM(
+        host.ESXI_ID,
+        tempComputerID,
+        computer.name,
+        VMStatus
+      );
     });
   });
 };
 
-
-exports.firstAuth=(host)=>{
-  return new Promise((resolve)=>{
+exports.firstAuth = (host) => {
+  return new Promise((resolve) => {
     const connect = `${TOOL} ${CONNECT_METHOD} ${host.ESXI_USER}@${host.ESXI_IP} -pw "${host.ESXI_PASSWORD}"`;
 
-    cp.exec(connect,exec_options,(err,stdout,stderr)=>{
+    cp.exec(connect, exec_options, (err, stdout, stderr) => {
       if (err) {
         console.log(stderr);
-      }else{
-          if (stdout.includes("Store key in cache? (y/n)")) {
-            stdin("y");
-          }
+      } else {
+        if (stdout.includes("Store key in cache? (y/n)")) {
+          stdin("y");
+          stdin(SIGINT);
+        }
       }
-    })
-
-
-  })
-}
-
+    });
+  });
+};
 
 exports.get_vm_status = (host, vmId) => {
   return new Promise((resolve, reject) => {
