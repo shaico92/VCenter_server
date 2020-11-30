@@ -60,11 +60,7 @@ const enableSSH = (hostIp, username, password) => {
 };
 
 router.get("/", async (req, res) => {
-  // const VMs = await VMController.sqlGetAllVM(
-  //   "VirtualMachines",
-
-  //   "*"
-  // );
+  
 
   const PreRunvms = await VMController.joinVMandESXI("ESXI_ID");
 
@@ -73,8 +69,13 @@ router.get("/", async (req, res) => {
       "ESXI_IP",
       element.ESXI_IP
     );
-
-    ssh.get_vm_status(host[0], element.VMid);
+    const sshEnabled = await ssh.check_ssh_enabled(host[0]);
+    if (sshEnabled===1) {
+      ssh.get_vm_status(host[0], element.VMid);
+    }else{
+        console.log('no ssh');
+    }
+    
   });
 
   //
@@ -108,20 +109,20 @@ router.get("/", async (req, res) => {
     });
   });
   res.send(hosts);
-  res.end();
+  
 });
 
-router.delete("/deleteHost", async (req, res) => {
-  const whoToDelete = req.body;
+router.post("/deleteHost", async (req, res) => {
+  const whoToDelete = req.body.ip;
 
-  const host = await ESXIController.sqlGetBySpecificValue("ESXI_IP");
+  const host = await ESXIController.sqlGetBySpecificValue("ESXI_IP",whoToDelete);
   console.log(host);
   if (host) {
-    VMControl.deleteRow("ESXI_ID", host.ESXI_ID);
-    ESXIController.deleteRow("ESXI_ID", whoToDelete.hostip);
+    VMControl.deleteRow("ESXI_ID", host[0].ESXI_ID);
+    ESXIController.deleteRowESXI("ESXI_IP", whoToDelete);
   } else {
   }
-  res.send(`${whoToDelete.hostip} deleted from records`);
+  res.send(`${whoToDelete} deleted from records`);
 });
 
 router.post("/insertESXI", async (req, res) => {

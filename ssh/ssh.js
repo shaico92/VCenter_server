@@ -71,7 +71,9 @@ exports.turn_off_selected_computer = async (id) => {
     );
   });
 };
-//s
+//
+
+
 
 exports.check_ssh_enabled = (host) => {
   return new Promise((resolve) => {

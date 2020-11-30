@@ -19,7 +19,7 @@ ESXIController.sqlInsertMachine = async (ESXI_IP, ESXI_USER, ESXI_PASSWORD) => {
   }
 };
 
-ESXIController.deleteRow = (collumn, value) => {
+ESXIController.deleteRowESXI = (collumn, value) => {
   const deleteSentence = `DELETE FROM ${table} WHERE ${collumn} = "${value}"`;
   ESXIController.exec(deleteSentence);
 };
