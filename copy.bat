@@ -1,0 +1,1 @@
+xcopy .\machines.db .\db\machines.db /y

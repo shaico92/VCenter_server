@@ -122,7 +122,7 @@ router.post("/deleteHost", async (req, res) => {
     ESXIController.deleteRowESXI("ESXI_IP", whoToDelete);
   } else {
   }
-  res.send(`${whoToDelete} deleted from records`);
+  res.send(whoToDelete);
 });
 
 router.post("/insertESXI", async (req, res) => {
