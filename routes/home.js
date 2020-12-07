@@ -27,6 +27,7 @@ router.use((req, res, next) => {
   next();
 });
 
+
 const enableSSH = (hostIp, username, password) => {
   return new Promise(async (resolve) => {
     const chromeDriver = require("../chromeDriver/chromeDriver");
@@ -124,6 +125,26 @@ router.post("/deleteHost", async (req, res) => {
   }
   res.send(whoToDelete);
 });
+
+
+router.post('/checkSSH/:ip',async(req,res)=>{
+  const ip = req.params.ip;
+  const obj = req.body
+  const ping=await ssh.checkLanConnection(ip);
+  if (ping) {
+   const finish=await  enableSSH(ip,obj.user,obj.pass);
+   if (finish) {
+    res.send("enabling ssh on esxi completed!") 
+   }
+  } else {
+    console.log("no lan connection please enable lan connection before continue");
+    res.send("no lan connection please enable lan connection before continue");
+  }
+  //
+  
+
+})
+
 
 router.post("/insertESXI", async (req, res) => {
   console.log("now in /insertESXI");

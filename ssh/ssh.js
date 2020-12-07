@@ -90,6 +90,20 @@ exports.check_ssh_enabled = (host) => {
   });
 };
 
+exports.checkLanConnection = ip=>{
+  return new Promise((resolve)=>{const command = `ping ${ip}`;
+  cp.exec(command,exec_options,(err,stdout,stderr)=>{
+    if (err) {
+      console.log(stderr);
+      console.log(err.message);
+      resolve(null) ;
+    }else{
+      console.log(stdout);
+      resolve(1) ;
+    }
+  })})
+}
+
 exports.get_vm_in_host = (host) => {
   console.log(host);
   const commandToGetMachines = `${TOOL} ${CONNECT_METHOD} ${host.ESXI_USER}@${host.ESXI_IP} -pw "${host.ESXI_PASSWORD}" -batch ${ESXI_GET_MACHINES} `;
