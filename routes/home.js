@@ -71,10 +71,10 @@ router.get("/", async (req, res) => {
       element.ESXI_IP
     );
     const sshEnabled = await ssh.check_ssh_enabled(host[0]);
-    if (sshEnabled===1) {
+    if (sshEnabled) {
       ssh.get_vm_status(host[0], element.VMid);
     }else{
-        console.log('no ssh');
+      res.status(400).send({message:`no SSH enabled in host with host: ${host[0].ESXI_IP} status is not valid`})
     }
     
   });
@@ -137,8 +137,9 @@ router.post('/checkSSH/:ip',async(req,res)=>{
     res.send("enabling ssh on esxi completed!") 
    }
   } else {
-    console.log("no lan connection please enable lan connection before continue");
-    res.send("no lan connection please enable lan connection before continue");
+    
+    res.status(400).send({message:`no lan connection with host: ${ip} please enable lan connection before continue`})
+    //res.send("no lan connection please enable lan connection before continue");
   }
   //
   
@@ -149,30 +150,38 @@ router.post('/checkSSH/:ip',async(req,res)=>{
 router.post("/insertESXI", async (req, res) => {
   console.log("now in /insertESXI");
   const ESXI_PROPS = req.body;
+  
 
-  const newID = await ESXIController.sqlInsertMachine(
-    ESXI_PROPS.ESXI_IP,
-    ESXI_PROPS.ESXI_USER,
-    ESXI_PROPS.ESXI_PASSWORD
-  );
-  if (newID) {
-    ESXI_PROPS.ESXI_ID = newID;
-
-    ssh.firstAuth(ESXI_PROPS);
-
-    ssh.get_vm_in_host(ESXI_PROPS);
-    ESXI_PROPS.ESXI_ID = newID;
-    const VMS = await VMController.sqlGet(
-      "VirtualMachines",
-      "ESXI_ID",
-      ESXI_PROPS.ESXI_ID,
-      "*"
+  const finish=await  ssh.check_ssh_enabled(ESXI_PROPS);
+  if (finish) {
+    const newID = await ESXIController.sqlInsertMachine(
+      ESXI_PROPS.ESXI_IP,
+      ESXI_PROPS.ESXI_USER,
+      ESXI_PROPS.ESXI_PASSWORD
     );
-    ESXI_PROPS.vms = VMS;
-    res.send(ESXI_PROPS);
-  } else {
-    res.send("Machine already exists");
+    if (newID) {
+      ESXI_PROPS.ESXI_ID = newID;
+  
+      ssh.firstAuth(ESXI_PROPS);
+  
+      ssh.get_vm_in_host(ESXI_PROPS);
+      ESXI_PROPS.ESXI_ID = newID;
+      const VMS = await VMController.sqlGet(
+        "VirtualMachines",
+        "ESXI_ID",
+        ESXI_PROPS.ESXI_ID,
+        "*"
+      );
+      ESXI_PROPS.vms = VMS;
+      res.send(ESXI_PROPS);
+    } else {
+      res.send("Machine already exists");
+    }  
+  }else{
+    res.status(400).send({message:`no SSH enabled in host with host: ${ESXI_PROPS.ESXI_IP} please enable SSH connection before continue`})
   }
+
+  
 });
 router.post("/powerOnOff", async (req, res) => {
   let response = null;

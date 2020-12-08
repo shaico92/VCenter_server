@@ -81,7 +81,7 @@ exports.check_ssh_enabled = (host) => {
     cp.exec(check_ssh_enabled, exec_options, (err, stdout, stderr) => {
       if (err) {
         console.log(stderr);
-        resolve(0);
+        resolve(null);
       } else {
         console.log(stdout);
         resolve(1);
@@ -183,6 +183,7 @@ exports.get_vm_status = (host, vmId) => {
     cp.exec(commandToGetStatus, exec_options, (err, stdout, stderr) => {
       if (err) {
         console.log(stderr);
+        resolve(null)
       } else {
         if (stdout.includes("Powered on")) {
           VMController.setVMStatus(host.ESXI_ID, vmId, 1);
