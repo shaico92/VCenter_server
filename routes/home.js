@@ -28,34 +28,39 @@ router.use((req, res, next) => {
 });
 
 
-const enableSSH = (hostIp, username, password) => {
-  return new Promise(async (resolve) => {
+const enableSSH =(hostIp, username, password) => {
+  return new Promise( async(resolve) => {
     const chromeDriver = require("../chromeDriver/chromeDriver");
     let elm;
 
-    chromeDriver.get(`https://${hostIp}/ui/#/login`);
+    // chromeDriver.get(`https://${hostIp}/ui/#/login`);
 
-    chromeDriver.sendKeys("username", username);
-    chromeDriver.sendKeys("password", password);
+    // chromeDriver.sendKeys("username", username);
+    // chromeDriver.sendKeys("password", password);
 
-    elm = chromeDriver.findElmByid(`submit`);
+    // elm =await chromeDriver.findElmByid(`submit`);
+
+    // await chromeDriver.clickElm(elm);
+
+    // elm =await  chromeDriver.findElmBycss("a[title='Actions for this host']");
+    elm = await chromeDriver.loginHost(hostIp, username, password);
+
+
 
     chromeDriver.clickElm(elm);
 
-    elm = chromeDriver.findElmBycss("a[title='Actions for this host']");
-    chromeDriver.clickElm(elm);
+    elm =await chromeDriver.findElmBycss("span[class='esx-icon-host-services']");
+    chromeDriver.hoverTo(elm);
 
-    // elm = chromeDriver.findElmBycss("span[class='esx-icon-host-services']");
-    // chromeDriver.hoverTo(elm);
-
-    const sshEnabled = await chromeDriver.findElmBycss(
+    const sshEnabled =await  chromeDriver.findElmBycss(
       "span[class='esx-icon-service-ssh']",
       1
     );
 
     if (sshEnabled === 1) {
-      chromeDriver.quit();
       resolve(1);
+      chromeDriver.quit();
+      
     }
   });
 };

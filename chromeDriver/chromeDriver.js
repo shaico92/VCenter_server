@@ -24,8 +24,14 @@ chrome.jsExecuter = (command) => {
 };
 
 chrome.findElmByid = (id) => {
-  const elm = chrome.wait(until.elementLocated(By.id(id)), WAIT);
-  return elm;
+  return new Promise((resolve)=>{
+    const elm = chrome.wait(until.elementLocated(By.id(id)), WAIT);
+    if (elm) {
+      resolve(elm)
+    }else{
+      resolve(null)
+    }
+  })
 };
 
 chrome.hoverTo = (elm) => {
@@ -44,7 +50,14 @@ chrome.clickBtn = (cssSelector) => {
 
 chrome.clickElm = (elm) => {
   
-  elm.click();
+  return new Promise((resolve)=>{
+    if (elm) {
+      elm.click();
+      resolve(1)
+    }else{
+      resolve(null)
+    }
+  })
 };
 chrome.clickAndMove = (elm) => {
   actions.move({ origin: elm }).perform();
@@ -76,5 +89,29 @@ chrome.findElmBycss = (cssSelector, val) => {
   
   })
 };
+
+
+chrome.loginHost=(hostIp,username,password)=>{
+  return new Promise(async(resolve)=>{
+    let elm;
+  chrome.get(`https://${hostIp}/ui/#/login`);
+
+  chrome.sendKeys("username", username);
+  chrome.sendKeys("password", password);
+
+  elm =await chrome.findElmByid(`submit`);
+
+  chrome.clickElm(elm);
+  elm =await  chrome.findElmBycss("a[title='Actions for this host']");
+    if (elm) {
+      console.log("after login");
+      resolve(elm)
+    } else {
+      resolve(null)
+    }
+
+
+  })
+}
 
 module.exports = chrome;
