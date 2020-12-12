@@ -77,7 +77,7 @@ exports.turn_off_selected_computer = async (id) => {
 
 exports.check_ssh_enabled = (host) => {
   return new Promise((resolve) => {
-    const check_ssh_enabled = `${TOOL} ${CONNECT_METHOD} ${host.ESXI_USER}@${host.ESXI_IP} -pw "${host.ESXI_PASSWORD}"`;
+    const check_ssh_enabled = `${TOOL} ${CONNECT_METHOD} ${host.ESXI_USER}@${host.ESXI_IP} -pw "${host.ESXI_PASSWORD}" -batch`;
     cp.exec(check_ssh_enabled, exec_options, (err, stdout, stderr) => {
       if (err) {
         console.log(stderr);
@@ -150,7 +150,7 @@ exports.get_vm_in_host = (host) => {
 
       const tempComputerID = Number(computer.id);
       const VMStatus = await this.get_vm_status(host, tempComputerID);
-      VMController.sqlInsertMachineVM(
+   await   VMController.sqlInsertMachineVM(
         host.ESXI_ID,
         tempComputerID,
         computer.name,
@@ -187,9 +187,11 @@ exports.get_vm_status = (host, vmId) => {
       } else {
         if (stdout.includes("Powered on")) {
           VMController.setVMStatus(host.ESXI_ID, vmId, 1);
+          console.log(`${vmId} status is on`);
           resolve(1);
         } else {
           VMController.setVMStatus(host.ESXI_ID, vmId, 0);
+          console.log(`${vmId} status is off`);
           resolve(0);
         }
       }
