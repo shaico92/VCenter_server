@@ -25,48 +25,36 @@ const POWER_OFF_METHOD = "vim-cmd vmsvc/power.off";
 const TOOL = "plink.exe ";
 const GET_MACHINE_STATE = "vim-cmd vmsvc/power.getstate";
 const TEST_ECHO = "test login";
-exports.turn_on_selected_computer = async (id) => {
-  const hostId = await VMController.sqlGet(
-    "VirtualMachines",
-    id,
-    "VMid",
-    "ESXI_ID"
-  );
+exports.turn_on_selected_computer = async (hostip,vmName,id) => {
   const host = await ESXIController.sqlGetBySpecificValue(
-    "ESXI_ID",
-    hostId[0].ESXI_ID
+    "ESXI_IP",
+    hostip
   );
-  const commandToTurnOnComputer = `${TOOL} ${CONNECT_METHOD} ${host[0].ESXI_USER}@${host[0].ESXI_IP} -pw "${host[0].ESXI_PASSWORD}" -batch ${POWER_ON_METHOD} `;
-
-  cp.exec(commandToTurnOnComputer + id, exec_options, (err, stdout, stderr) => {
-    return stdout;
-  });
-};
-exports.turn_off_selected_computer = async (id) => {
-  const hostId = await VMController.sqlGet(
-    "VirtualMachines",
-    id,
-    "VMid",
-    "ESXI_ID"
-  );
-  const VMname = await VMController.sqlGet(
-    "VirtualMachines",
-    id,
-    "VMid",
-    "VM_name"
-  );
-  const host = await ESXIController.sqlGetBySpecificValue(
-    "ESXI_ID",
-    hostId[0].ESXI_ID
-  );
-  ///sad
   return new Promise((resolve, reject) => {
-    const commandToTurnOffComputer = `${TOOL} ${CONNECT_METHOD} ${host[0].ESXI_USER}@${host[0].ESXI_IP} -pw "${host[0].ESXI_PASSWORD}" -batch ${POWER_OFF_METHOD} `;
+    const commandToTurnOffComputer = `${TOOL} ${CONNECT_METHOD} ${host[0].ESXI_USER}@${hostip} -pw "${host[0].ESXI_PASSWORD}" -batch ${POWER_ON_METHOD} `;
     cp.exec(
       commandToTurnOffComputer + id,
       exec_options,
-      (err, stdout, stderr) => {
-        resolve(stdout + VMname[0].VM_name + " -" + id);
+      async(err, stdout, stderr) => {
+     await   resolve(stdout + vmName + " -" + id);
+      }
+    );
+  });
+};
+exports.turn_off_selected_computer = async (hostip,vmName,id) => {
+  
+  const host = await ESXIController.sqlGetBySpecificValue(
+    "ESXI_IP",
+    hostip
+  );
+  
+  return new Promise((resolve, reject) => {
+    const commandToTurnOffComputer = `${TOOL} ${CONNECT_METHOD} ${host[0].ESXI_USER}@${hostip} -pw "${host[0].ESXI_PASSWORD}" -batch ${POWER_OFF_METHOD} `;
+    cp.exec(
+      commandToTurnOffComputer + id,
+      exec_options,
+      async(err, stdout, stderr) => {
+     await   resolve(stdout + vmName + " -" + id);
       }
     );
   });

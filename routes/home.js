@@ -206,9 +206,9 @@ router.post("/powerOnOff", async (req, res) => {
   let response = null;
 
   if (req.body.currentStatus === 1) {
-    respose = await ssh.turn_off_selected_computer(req.body.id);
+    respose = await ssh.turn_off_selected_computer(req.body.hostIP,req.body.vmName,req.body.id);
   } else {
-    respose = await ssh.turn_on_selected_computer(req.body.id);
+    respose = await ssh.turn_on_selected_computer(req.body.hostIP,req.body.vmName,req.body.id);
   }
 
   res.send(respose);
