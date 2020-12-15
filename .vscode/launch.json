@@ -7,7 +7,7 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "debug Program",
+            "name": "debug server",
             "skipFiles": [
                 "<node_internals>/**"
             ],

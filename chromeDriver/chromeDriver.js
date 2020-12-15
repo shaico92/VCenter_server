@@ -44,9 +44,17 @@ chrome.findElmByText = (text) => {
 };
 
 chrome.clickBtn = (cssSelector) => {
-  const elm = chrome.wait(until.elementIsEnabled(By.css(cssSelector)));
+  const elm = chrome.wait(until.elementLocated(By.css(cssSelector)), WAIT);
   elm.click();
 };
+
+chrome.getAllElm = (cssSelector)=>{
+return new Promise((resolve)=>{
+  const list = chrome.findElements(By.css(cssSelector))
+  resolve(list)
+})
+}
+
 
 chrome.clickElm = (elm) => {
   
@@ -67,6 +75,13 @@ chrome.sendKeys = (id, keys) => {
   const webElm = chrome.wait(until.elementLocated(By.id(id)), WAIT);
   webElm.sendKeys(keys);
 };
+chrome.sendKeyscss = (css, keys) => {
+  const webElm = chrome.wait(until.elementLocated(By.css(css)), WAIT);
+  webElm.sendKeys(keys);
+};
+
+;
+
 
 //Actions for this host
 chrome.findElmBycss = (cssSelector, val) => {

@@ -5,6 +5,10 @@
 /.pnp
 .pnp.js
 .db
+httpMonday.js
+lmsTest.js
+httpMonday-win.exe
+
 
 # testing
 /coverage

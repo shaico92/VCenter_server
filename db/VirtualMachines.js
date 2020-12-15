@@ -11,9 +11,12 @@ const vmStatus = "vmStatus";
 //inserting a VM
 VMControl.sqlInsertMachineVM = (ESXI_ID, VMid, VM_name, status) => {
   const insert = `INSERT INTO VirtualMachines (ESXI_ID,VMid,VM_name,vmStatus) VALUES(${ESXI_ID}, ${VMid}, "${VM_name}",${status})`;
-
+return new Promise(async(resolve)=>{
+  
   VMControl.exec(insert);
-  console.log(`${ESXI_ID} ${VMid}, "${VM_name}" inserted to db`);
+  //await console.log(`${ESXI_ID} ${VMid}, "${VM_name}" inserted to db`);
+  resolve(1);
+})
 };
 
 //DELETING ROWS WITH SPECIFIC VALUES
@@ -23,14 +26,14 @@ VMControl.deleteRow = (collumn, value) => {
 };
 
 //getting all virtual machine by param;
-VMControl.sqlGet = async (table, collumn, value, paramToget) => {
-  const sentence = `SELECT ${paramToget} FROM ${table} WHERE ${collumn}=${value};`;
-  return new Promise((resolve, reject) => {
-    VMControl.all(sentence, (err, data) => {
+VMControl.sqlGetVM =  (table, collumn, value, paramToget) => {
+   const sentence = `SELECT ${paramToget} FROM ${table} WHERE ${collumn}=${value};`;
+   return new Promise((resolve, reject) => {
+      VMControl.all(sentence,async (err, data) => {
       if (err) {
         console.log(err);
       } else {
-        resolve(data);
+         resolve(data);
       }
     });
   });

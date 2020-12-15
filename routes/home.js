@@ -169,18 +169,32 @@ router.post("/insertESXI", async (req, res) => {
   
       ssh.firstAuth(ESXI_PROPS);
   
-      ssh.get_vm_in_host(ESXI_PROPS);
-      ESXI_PROPS.ESXI_ID = newID;
-      const VMS = await VMController.sqlGet(
+  const added=     await ssh.get_vm_in_host(ESXI_PROPS);
+      if (added) {
+        ESXI_PROPS.ESXI_ID = newID;
+      const VMS = await VMController.sqlGetVM(
         "VirtualMachines",
         "ESXI_ID",
         ESXI_PROPS.ESXI_ID,
         "*"
-      );
-      ESXI_PROPS.vms = VMS;
+      );  
+      const tempArr=[]
+        VMS.forEach((elm,i)=>{
+          
+            console.log(elm);
+
+            const obj = {
+              vmName:elm.VM_name,vmId:elm.VMid,vmStatus:elm.vmStatus
+            }
+            tempArr.push(obj);
+
+        })
+
+      ESXI_PROPS.vms = tempArr;
       res.send(ESXI_PROPS);
+      }    
     } else {
-      res.send("Machine already exists");
+      res.status(400).send({message:`The host: ${ESXI_PROPS.ESXI_IP} already exists`})
     }  
   }else{
     res.status(400).send({message:`no SSH enabled in host with host: ${ESXI_PROPS.ESXI_IP} please enable SSH connection before continue`})

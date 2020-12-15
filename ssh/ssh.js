@@ -16,7 +16,7 @@ const exec_options = {
   maxBuffer: 200 * 1024,
   killSignal: "SIGTERM",
 };
-let tempArr = [];
+
 
 const ESXI_GET_MACHINES = "vim-cmd vmsvc/getallvm";
 const CONNECT_METHOD = "-ssh";
@@ -24,7 +24,7 @@ const POWER_ON_METHOD = "vim-cmd vmsvc/power.on";
 const POWER_OFF_METHOD = "vim-cmd vmsvc/power.off";
 const TOOL = "plink.exe ";
 const GET_MACHINE_STATE = "vim-cmd vmsvc/power.getstate";
-
+const TEST_ECHO = "test login";
 exports.turn_on_selected_computer = async (id) => {
   const hostId = await VMController.sqlGet(
     "VirtualMachines",
@@ -77,22 +77,20 @@ exports.turn_off_selected_computer = async (id) => {
 
 exports.check_ssh_enabled = (host) => {
   return new Promise((resolve) => {
-    const check_ssh_enabled = `${TOOL} ${CONNECT_METHOD} ${host.ESXI_USER}@${host.ESXI_IP} -pw "${host.ESXI_PASSWORD}" -batch`;
-    cp.exec(check_ssh_enabled, exec_options, (err, stdout, stderr) => {
-      if (err) {
-        console.log(stderr);
-        resolve(null);
-      } else {
-        console.log(stdout);
-        resolve(1);
+    const check_ssh_enabled = `${TOOL} ${CONNECT_METHOD} ${host.ESXI_USER}@${host.ESXI_IP} -pw "${host.ESXI_PASSWORD}" -batch echo ${TEST_ECHO}`;
+      cp.exec(check_ssh_enabled, exec_options, (err, stdout, stderr) => {
+      if (stdout.includes(TEST_ECHO)) {
+        resolve(1)
+      }else{
+        resolve(null)
       }
     });
   });
 };
 
 exports.checkLanConnection = ip=>{
-  return new Promise((resolve)=>{const command = `ping ${ip}`;
-  cp.exec(command,exec_options,(err,stdout,stderr)=>{
+  return new Promise(async(resolve)=>{const command = `ping ${ip}`;
+  await cp.exec(command,exec_options,(err,stdout,stderr)=>{
     if (err) {
       console.log(stderr);
       console.log(err.message);
@@ -105,9 +103,11 @@ exports.checkLanConnection = ip=>{
 }
 
 exports.get_vm_in_host = (host) => {
-  console.log(host);
+  const tempArr = [];
+  return new Promise((resolve)=>{
+    console.log(host);
   const commandToGetMachines = `${TOOL} ${CONNECT_METHOD} ${host.ESXI_USER}@${host.ESXI_IP} -pw "${host.ESXI_PASSWORD}" -batch ${ESXI_GET_MACHINES} `;
-  cp.exec(commandToGetMachines, exec_options, (err, stdout, stderr) => {
+   cp.exec(commandToGetMachines, exec_options, (err, stdout, stderr) => {
     for (let index = 0; index < stdout.length; index++) {
       const element = stdout.split("\n");
       const currentPosition = index;
@@ -117,7 +117,7 @@ exports.get_vm_in_host = (host) => {
       }
     }
 
-    tempArr.forEach(async (el) => {
+    tempArr.forEach(async (el, i) => {
       const computer = {};
       for (let index = 0; index < el.length; index++) {
         el = el.replace(" ", "#");
@@ -149,15 +149,22 @@ exports.get_vm_in_host = (host) => {
       computer.id = id;
 
       const tempComputerID = Number(computer.id);
+      
       const VMStatus = await this.get_vm_status(host, tempComputerID);
-   await   VMController.sqlInsertMachineVM(
+      VMController.sqlInsertMachineVM(
         host.ESXI_ID,
         tempComputerID,
         computer.name,
         VMStatus
       );
+      console.log(i);
+      if  (tempArr.length-1===i) {
+        await  resolve(1);    
+      }
     });
+    
   });
+  })
 };
 
 exports.firstAuth = (host) => {
@@ -187,11 +194,11 @@ exports.get_vm_status = (host, vmId) => {
       } else {
         if (stdout.includes("Powered on")) {
           VMController.setVMStatus(host.ESXI_ID, vmId, 1);
-          console.log(`${vmId} status is on`);
+          //console.log(`${vmId} status is on`);
           resolve(1);
         } else {
           VMController.setVMStatus(host.ESXI_ID, vmId, 0);
-          console.log(`${vmId} status is off`);
+          //console.log(`${vmId} status is off`);
           resolve(0);
         }
       }
