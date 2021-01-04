@@ -1,5 +1,6 @@
 var express = require("express");
-
+const os = require("os");
+const hostname = os.hostname();
 var router = express.Router();
 const ssh = require("../ssh/ssh");
 const VMController = require("../db/VirtualMachines");
@@ -47,19 +48,19 @@ const enableSSH =(hostIp, username, password) => {
 
 
 
-    chromeDriver.clickElm(elm);
+    // await chromeDriver.clickElm(elm);
 
-    elm =await chromeDriver.findElmBycss("span[class='esx-icon-host-services']");
-    chromeDriver.hoverTo(elm);
+    // elm =await chromeDriver.findElmBycss("span[class='esx-icon-host-services']");
+    // chromeDriver.hoverTo(elm);
 
-    const sshEnabled =await  chromeDriver.findElmBycss(
-      "span[class='esx-icon-service-ssh']",
-      1
-    );
+    // const sshEnabled =await  chromeDriver.findElmBycss(
+    //   "span[class='esx-icon-service-ssh']",
+    //   1
+    // );
 
     if (sshEnabled === 1) {
-      resolve(1);
-      chromeDriver.quit();
+      await resolve(1);
+      await chromeDriver.quit();
       
     }
   });

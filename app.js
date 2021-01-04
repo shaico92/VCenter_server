@@ -1,5 +1,6 @@
 const express = require("express");
 const PORT = process.env.PORT || 4000;
+
 const bodyParser = require("body-parser");
 const app = express();
 
@@ -21,6 +22,6 @@ const home = require("./routes/home");
 
 app.use(home);
 
-app.listen(PORT, () => {
+app.listen(PORT,() => {
   console.log(`Server started ON PORT ${PORT}`);
 });

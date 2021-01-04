@@ -34,8 +34,8 @@ chrome.findElmByid = (id) => {
   })
 };
 
-chrome.hoverTo = (elm) => {
-  actions.move({ origin: elm }).perform();
+chrome.hoverTo = async(elm) => {
+  await actions.move({ origin: elm }).perform();
 };
 
 chrome.findElmByText = (text) => {
@@ -43,9 +43,9 @@ chrome.findElmByText = (text) => {
   return elm;
 };
 
-chrome.clickBtn = (cssSelector) => {
+chrome.clickBtn = async(cssSelector) => {
   const elm = chrome.wait(until.elementLocated(By.css(cssSelector)), WAIT);
-  elm.click();
+  await elm.click();
 };
 
 chrome.getAllElm = (cssSelector)=>{
@@ -111,15 +111,19 @@ chrome.loginHost=(hostIp,username,password)=>{
     let elm;
   chrome.get(`https://${hostIp}/ui/#/login`);
 
-  chrome.sendKeys("username", username);
-  chrome.sendKeys("password", password);
+  await chrome.sendKeys("username", username);
+  await chrome.sendKeys("password", password);
 
   elm =await chrome.findElmByid(`submit`);
-
-  chrome.clickElm(elm);
+    
+  await chrome.clickElm(elm);
+  await console.log("after login");
   elm =await  chrome.findElmBycss("a[title='Actions for this host']");
+
+  await chrome.jsExecuter(`const s = document.querySelectorAll("a[title='Actions for this host']");`);
+  await chrome.jsExecuter(`s[0].click();`);
     if (elm) {
-      console.log("after login");
+
       resolve(elm)
     } else {
       resolve(null)
