@@ -34,17 +34,25 @@ const enableSSH =(hostIp, username, password) => {
     const chromeDriver = require("../chromeDriver/chromeDriver");
     let elm;
 
-    // chromeDriver.get(`https://${hostIp}/ui/#/login`);
+     chromeDriver.get(`https://${hostIp}/ui/#/login`).then(async()=>await chromeDriver.sendKeys("username", username))
+     .then(async()=>await chromeDriver.sendKeys("password", password))
+     .then(async()=>{elm= await chromeDriver.findElmByid(`submit`);
+     chromeDriver.clickElm(elm)}).then(async()=>{
+      elm =await chromeDriver.findElmBycss("span[class='object-title']"); 
+      await chromeDriver.jsExecuter(`console.log("a[title='Actions for this host']")`)})
+    //  .then(()=>)
+    //  .then(()=>)
+    //  .then(()=>)
 
-    // chromeDriver.sendKeys("username", username);
-    // chromeDriver.sendKeys("password", password);
+    //  ;
+    //  ;
 
-    // elm =await chromeDriver.findElmByid(`submit`);
+    //  elm = chromeDriver.findElmByid(`submit`);
 
-    // await chromeDriver.clickElm(elm);
+    //  ;
 
-    // elm =await  chromeDriver.findElmBycss("a[title='Actions for this host']");
-    elm = await chromeDriver.loginHost(hostIp, username, password);
+    //   ;
+    // elm = await chromeDriver.loginHost(hostIp, username, password);
 
 
 

@@ -3,7 +3,7 @@ const webdriver = require("selenium-webdriver"),
   By = webdriver.By,
   until = webdriver.until;
 
-const WAIT = 60000;
+const WAIT = 10000;
 exports.chromeO = require("selenium-webdriver/chrome");
 const sleep = require("thread-sleep");
 const options = new this.chromeO.Options();
@@ -18,7 +18,7 @@ chrome.manage().setTimeouts({ implicit: 3000 });
 chrome.jsExecuter = (command) => {
   console.log(command);
 
-  chrome.executeAsyncScript(command).then(function (return_value) {
+  chrome.execute(command).then(function (return_value) {
     console.log("returned ", return_value);
   });
 };
