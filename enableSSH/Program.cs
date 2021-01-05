@@ -9,18 +9,20 @@ namespace enableSSH
 {
     class Program
     {
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
 
             //Console.WriteLine(args[0]);
 
-
+            string hostIp = args[0];
+            string user = args[1];
+            string pass = args[2];
             ChromeOptions chromeOptions = new ChromeOptions();
             chromeOptions.AddArguments("--ignore-certificate-errors");
             IWebDriver driver = new ChromeDriver(chromeOptions);
             driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(30);
             IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
-            string homeURL = "https://192.168.10.170";
+            string homeURL = $"https://{hostIp}";
 
 
 
@@ -31,15 +33,15 @@ namespace enableSSH
             IWebElement password;
             IWebElement submit;
             IWebElement settings;
-            IWebElement enableSSHbtn;
+
             string jsCommand = "document.querySelectorAll('.esx-icon-service-ssh')[0].click();";
-            string jsCommand3 = "console.log('sdad')";
+
 
             username = driver.FindElement(By.CssSelector("#username"));
             password = driver.FindElement(By.CssSelector("#password"));
             submit = driver.FindElement(By.CssSelector("#submit"));
-            username.SendKeys("root");
-            password.SendKeys("Aa123456&*");
+            username.SendKeys(user);
+            password.SendKeys(pass);
             submit.Click();
 
 
@@ -52,7 +54,9 @@ namespace enableSSH
             js.ExecuteScript(jsCommand);
 
             Thread.Sleep(4000);
-            driver.Quit();
+
+            Console.WriteLine(1);
+            driver.Close();
             //enableSSHbtn.Click();
             // webElements[0].SendKeys(name);
             // webElements[1].SendKeys(id);
@@ -71,11 +75,11 @@ namespace enableSSH
 
             // el.Click();
             // Thread.Sleep(3000);
-            // driver.Quit();
+            driver.Quit();
 
 
 
-
+            return 0;
         }
     }
 }

@@ -30,48 +30,7 @@ router.use((req, res, next) => {
 
 
 const enableSSH =(hostIp, username, password) => {
-  return new Promise( async(resolve) => {
-    const chromeDriver = require("../chromeDriver/chromeDriver");
-    let elm;
-
-     chromeDriver.get(`https://${hostIp}/ui/#/login`).then(async()=>await chromeDriver.sendKeys("username", username))
-     .then(async()=>await chromeDriver.sendKeys("password", password))
-     .then(async()=>{elm= await chromeDriver.findElmByid(`submit`);
-     chromeDriver.clickElm(elm)}).then(async()=>{
-      elm =await chromeDriver.findElmBycss("span[class='object-title']"); 
-      await chromeDriver.jsExecuter(`console.log("a[title='Actions for this host']")`)})
-    //  .then(()=>)
-    //  .then(()=>)
-    //  .then(()=>)
-
-    //  ;
-    //  ;
-
-    //  elm = chromeDriver.findElmByid(`submit`);
-
-    //  ;
-
-    //   ;
-    // elm = await chromeDriver.loginHost(hostIp, username, password);
-
-
-
-    // await chromeDriver.clickElm(elm);
-
-    // elm =await chromeDriver.findElmBycss("span[class='esx-icon-host-services']");
-    // chromeDriver.hoverTo(elm);
-
-    // const sshEnabled =await  chromeDriver.findElmBycss(
-    //   "span[class='esx-icon-service-ssh']",
-    //   1
-    // );
-
-    if (sshEnabled === 1) {
-      await resolve(1);
-      await chromeDriver.quit();
-      
-    }
-  });
+  
 };
 
 router.get("/", async (req, res) => {
@@ -146,7 +105,8 @@ router.post('/checkSSH/:ip',async(req,res)=>{
   const obj = req.body
   const ping=await ssh.checkLanConnection(ip);
   if (ping) {
-   const finish=await  enableSSH(ip,obj.user,obj.pass);
+   //const finish=await  enableSSH(ip,obj.user,obj.pass);
+   const finish=await  ssh.enableSSH(ip,obj.user,obj.pass);
    if (finish) {
     res.send("enabling ssh on esxi completed!") 
    }

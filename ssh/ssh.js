@@ -25,6 +25,7 @@ const POWER_OFF_METHOD = "vim-cmd vmsvc/power.off";
 const TOOL = "plink.exe ";
 const GET_MACHINE_STATE = "vim-cmd vmsvc/power.getstate";
 const TEST_ECHO = "test login";
+const CHROME_PROGRAM = `${process.cwd()}\\enableSSH\\bin\\Debug\\net5.0\\enableSSH.exe`;
 exports.turn_on_selected_computer = async (hostip,vmName,id) => {
   const host = await ESXIController.sqlGetBySpecificValue(
     "ESXI_IP",
@@ -61,7 +62,26 @@ exports.turn_off_selected_computer = async (hostip,vmName,id) => {
 };
 //
 
+exports.enableSSH=(hostip,user,pass)=>{
 
+  const executeChromeDriver = ` start ${CHROME_PROGRAM} ${hostip} ${user} "${pass}"`;
+  return new Promise((resolve, reject) => {
+    
+    cp.exec(
+      executeChromeDriver,
+      exec_options,
+      async(err, stdout, stderr) => {
+        if (stderr.length>0||err) {
+          await resolve("error");
+        } else {
+          await  resolve(1);    
+        }
+      
+      }
+    );
+  });
+
+}
 
 exports.check_ssh_enabled = (host) => {
   return new Promise((resolve) => {
