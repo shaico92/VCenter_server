@@ -19,6 +19,7 @@ const exec_options = {
 
 
 const ESXI_GET_MACHINES = "vim-cmd vmsvc/getallvm";
+const SESSION_FINISHED = `SESSION_FINISHED`;
 const CONNECT_METHOD = "-ssh";
 const POWER_ON_METHOD = "vim-cmd vmsvc/power.on";
 const POWER_OFF_METHOD = "vim-cmd vmsvc/power.off";
@@ -64,17 +65,17 @@ exports.turn_off_selected_computer = async (hostip,vmName,id) => {
 
 exports.enableSSH=(hostip,user,pass)=>{
 
-  const executeChromeDriver = ` start ${CHROME_PROGRAM} ${hostip} ${user} "${pass}"`;
+  const executeChromeDriver = `${CHROME_PROGRAM} ${hostip} ${user} "${pass}"`;
   return new Promise((resolve, reject) => {
     
     cp.exec(
       executeChromeDriver,
       exec_options,
       async(err, stdout, stderr) => {
-        if (stderr.length>0||err) {
-          await resolve("error");
-        } else {
+         if(stdout.includes(SESSION_FINISHED)){
           await  resolve(1);    
+        }else{
+          await  resolve(null);    
         }
       
       }
@@ -114,7 +115,7 @@ exports.get_vm_in_host = (host) => {
   const tempArr = [];
   return new Promise((resolve)=>{
     console.log(host);
-  const commandToGetMachines = `${TOOL} ${CONNECT_METHOD} ${host.ESXI_USER}@${host.ESXI_IP} -pw "${host.ESXI_PASSWORD}" -batch ${ESXI_GET_MACHINES} `;
+  const commandToGetMachines = ` ${TOOL} ${CONNECT_METHOD} ${host.ESXI_USER}@${host.ESXI_IP} -pw "${host.ESXI_PASSWORD}" -batch ${ESXI_GET_MACHINES} `;
    cp.exec(commandToGetMachines, exec_options, (err, stdout, stderr) => {
     for (let index = 0; index < stdout.length; index++) {
       const element = stdout.split("\n");

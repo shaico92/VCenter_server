@@ -55,7 +55,6 @@ namespace enableSSH
 
             Thread.Sleep(4000);
 
-            Console.WriteLine(1);
             driver.Close();
             //enableSSHbtn.Click();
             // webElements[0].SendKeys(name);
@@ -75,6 +74,8 @@ namespace enableSSH
 
             // el.Click();
             // Thread.Sleep(3000);
+
+            Console.WriteLine("SESSION_FINISHED");
             driver.Quit();
 
 
