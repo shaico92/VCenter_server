@@ -102,14 +102,23 @@ router.post("/deleteHost", async (req, res) => {
 
 router.post('/checkSSH/:ip',async(req,res)=>{
   const ip = req.params.ip;
-  const obj = req.body
+  const obj = req.body;
+  const host={ESXI_USER:obj.user,ESXI_IP:ip,ESXI_PASSWORD:obj.pass}
   const ping=await ssh.checkLanConnection(ip);
   if (ping) {
-   //const finish=await  enableSSH(ip,obj.user,obj.pass);
-   const finish=await  ssh.enableSSH(ip,obj.user,obj.pass);
-   if (finish) {
-    res.send("enabling ssh on esxi completed!") 
-   }
+
+    const enabled =await ssh.check_ssh_enabled(host);
+    if (!enabled) {
+      //await ssh.killChromeDriver();
+      const finish=await  ssh.enableSSH(ip,obj.user,obj.pass);
+      if (finish) {
+       res.send("enabling ssh on esxi completed!") 
+      }   
+    }else{
+      res.send(`no need to enable ssh! on ${ip}`)
+    }
+
+   
   } else {
     
     res.status(400).send({message:`no lan connection with host: ${ip} please enable lan connection before continue`})

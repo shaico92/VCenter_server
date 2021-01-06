@@ -7,6 +7,9 @@
 
 .pnp.js
 .db
+.pdb
+
+.dll
 httpMonday.js
 lmsTest.js
 httpMonday-win.exe

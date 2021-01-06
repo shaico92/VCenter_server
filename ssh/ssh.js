@@ -81,17 +81,42 @@ exports.enableSSH=(hostip,user,pass)=>{
       }
     );
   });
+  
 
 }
 
+exports.killChromeDriver=(hostip,user,pass)=>{
+
+  const killChromeDriver = `taskkill /im chrome.exe /f `;
+  const killChrome = `taskkill /im chromedriver.exe /f `;
+  
+    
+    cp.exec(
+      killChromeDriver,
+      exec_options,
+      async(err, stdout, stderr) => {
+         await stdout;
+      
+      }
+    );
+    cp.exec(
+      killChrome,
+      exec_options,
+      async(err, stdout, stderr) => {
+         await stdout;
+      
+      }
+    );
+      
+    }
 exports.check_ssh_enabled = (host) => {
   return new Promise((resolve) => {
     const check_ssh_enabled = `${TOOL} ${CONNECT_METHOD} ${host.ESXI_USER}@${host.ESXI_IP} -pw "${host.ESXI_PASSWORD}" -batch echo ${TEST_ECHO}`;
-      cp.exec(check_ssh_enabled, exec_options, (err, stdout, stderr) => {
+      cp.exec(check_ssh_enabled, exec_options, async(err, stdout, stderr) => {
       if (stdout.includes(TEST_ECHO)) {
-        resolve(1)
+     await   resolve(1)
       }else{
-        resolve(null)
+        await  resolve(null)
       }
     });
   });
