@@ -1,11 +1,9 @@
 const cp = require("child_process");
-const { stdout, stderr, stdin } = require("process");
+
 const ESXIController = require("../db/ESXI");
 const VMController = require("../db/VirtualMachines");
 const db = require("../db/db");
-const { realpathSync } = require("fs");
-const { resolve } = require("path");
-const { exec } = require("../db/db");
+const config = require('../configReader');
 const { SIGINT } = require("constants");
 
 const exec_options = {
@@ -23,10 +21,14 @@ const SESSION_FINISHED = `SESSION_FINISHED`;
 const CONNECT_METHOD = "-ssh";
 const POWER_ON_METHOD = "vim-cmd vmsvc/power.on";
 const POWER_OFF_METHOD = "vim-cmd vmsvc/power.off";
-const TOOL = "plink.exe ";
+const TOOL = `${config.plinkPath}\\plink.exe `;
+const PUTTY = `${config.puttyPath}\\putty.exe `;
 const GET_MACHINE_STATE = "vim-cmd vmsvc/power.getstate";
 const TEST_ECHO = "test login";
-const CHROME_PROGRAM = `${process.cwd()}\\enableSSH\\bin\\Debug\\net5.0\\enableSSH.exe`;
+//const CHROME_PROGRAM = `${process.cwd()}\\enableSSH\\bin\\Debug\\net5.0\\enableSSH.exe`;
+const CHROME_PROGRAM = `${config.enableSSHPath}\\enableSSH.exe`;
+//const RSA_ACCEPT_PROGRAM= `${process.cwd()}\\enableRSAKey\\bin\\Debug\\net5.0\\enableRSAKey.exe`;
+const RSA_ACCEPT_PROGRAM= `${config.enableRSAPath}\\enableRSAKey.exe`;
 exports.turn_on_selected_computer = async (hostip,vmName,id) => {
   const host = await ESXIController.sqlGetBySpecificValue(
     "ESXI_IP",
@@ -121,6 +123,35 @@ exports.check_ssh_enabled = (host) => {
     });
   });
 };
+
+exports.storeServerKey=async(host)=>{
+
+  // return new Promise((resolve) => {
+    //const storeKey = `${PUTTY} ${CONNECT_METHOD} ${host.ESXI_USER}@${host.ESXI_IP} -pw "${host.ESXI_PASSWORD}" /y `;
+    const storeKey = `start ${PUTTY} ${CONNECT_METHOD} ${host.ESXI_USER}@${host.ESXI_IP} -pw "${host.ESXI_PASSWORD}" `;
+    const killexe = `taskkill /im putty.exe /f`;
+   await   cp.exec(storeKey, async(err, stdout, stderr) => {
+      
+    });
+  // });
+
+    const executeRSA =`${RSA_ACCEPT_PROGRAM}`;
+
+    return new Promise(async(resolve)=>{
+      await cp.exec(executeRSA,exec_options,async(err,stdout,stderr)=>{
+        if (stdout.includes("finished")) {
+          setTimeout(async()=>{
+            await   cp.exec(killexe, async(err, stdout, stderr) => {
+      
+            },3000);
+          })
+          await resolve(1);
+        }
+      })
+    })
+  
+
+}
 
 exports.checkLanConnection = ip=>{
   return new Promise(async(resolve)=>{const command = `ping ${ip}`;

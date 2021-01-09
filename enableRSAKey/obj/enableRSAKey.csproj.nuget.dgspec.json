@@ -1,0 +1,74 @@
+{
+  "format": 1,
+  "restore": {
+    "C:\\ESXI_VCenterClone-Server\\enableRSAKey\\enableRSAKey.csproj": {}
+  },
+  "projects": {
+    "C:\\ESXI_VCenterClone-Server\\enableRSAKey\\enableRSAKey.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\ESXI_VCenterClone-Server\\enableRSAKey\\enableRSAKey.csproj",
+        "projectName": "enableRSAKey",
+        "projectPath": "C:\\ESXI_VCenterClone-Server\\enableRSAKey\\enableRSAKey.csproj",
+        "packagesPath": "C:\\Users\\shai.c\\.nuget\\packages\\",
+        "outputPath": "C:\\ESXI_VCenterClone-Server\\enableRSAKey\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\shai.c\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net5.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net5.0": {
+            "targetAlias": "net5.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "net5.0": {
+          "targetAlias": "net5.0",
+          "dependencies": {
+            "InputSimulator": {
+              "target": "Package",
+              "version": "[1.0.4, )"
+            },
+            "Selenium.WebDriver": {
+              "target": "Package",
+              "version": "[3.141.0, )"
+            },
+            "System.Windows.Forms.Ribbon35": {
+              "target": "Package",
+              "version": "[3.5.8, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.101\\RuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}

@@ -6,13 +6,15 @@
 /seleniumProj
 
 .pnp.js
-.db
+*.db
 .pdb
 
-.dll
-httpMonday.js
-lmsTest.js
-httpMonday-win.exe
+*.dll
+*.exe
+
+/enableRSAKey/bin/Debug
+/enableSSH/bin/Debug
+
 
 
 # testing

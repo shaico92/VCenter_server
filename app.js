@@ -9,19 +9,18 @@ db.initialize();
 
 app.use(bodyParser.urlencoded({ extended: false }));
 
-// parse application/json
+
 app.use(bodyParser.json());
-//db.exec("SELECT name FROM machines.db WHERE type='table';");
 
-// plink -ssh root@192.168.0.31 -pw "Aa123456&*" -batch vim-cmd vmsvc/getallvm
-//plink -ssh root@192.168.0.31 -pw "Aa123456&*" -batch vim-cmd vmsvc/power.on 7
-
-//get_vm_in_host(hostProperties);
 
 const home = require("./routes/home");
 
 app.use(home);
 
 app.listen(PORT,() => {
-  console.log(`Server started ON PORT ${PORT}`);
+  console.log(`Server started ON PORT ${PORT}\n if designetad for production
+   should use hostname input write in config.json: "hostname":true`);
 });
+
+
+//const fs = require('fs');

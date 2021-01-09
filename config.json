@@ -1,0 +1,14 @@
+
+
+{
+
+
+
+"hostname":false,
+"enableSSHPath":"C:\\ESXI_VCenterClone-Server\\enableSSH\\bin\\Debug\\net5.0",
+
+"enableRSAPath":"C:\\ESXI_VCenterClone-Server\\enableRSAKey\\bin\\Debug\\net5.0",
+"puttyPath":"C:\\ESXI_VCenterClone-Server",
+"plinkPath":"C:\\ESXI_VCenterClone-Server"
+
+}

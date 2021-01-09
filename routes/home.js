@@ -2,14 +2,15 @@ var express = require("express");
 const os = require("os");
 const hostname = os.hostname();
 var router = express.Router();
+const config = require('../configReader');
 const ssh = require("../ssh/ssh");
 const VMController = require("../db/VirtualMachines");
 const ESXIController = require("../db/ESXI");
 const VMControl = require("../db/VirtualMachines");
 
-const { route } = require("express/lib/router");
-const { threadId } = require("worker_threads");
 
+if (config.useHostName===false) {
+  
 router.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "http://localhost:3000"); // update to match the domain you will make the request from
 
@@ -27,11 +28,28 @@ router.use((req, res, next) => {
   }
   next();
 });
-
-
-const enableSSH =(hostIp, username, password) => {
+}else{
   
-};
+router.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", `http://${hostname}:3000`); // update to match the domain you will make the request from
+
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+  );
+  if (req.method === "OPTIONS") {
+    res.header(
+      "Access-Control-Allow-Headers",
+      "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+    );
+    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH");
+    return res.status(200).json({});
+  }
+  next();
+});
+}
+
+
 
 router.get("/", async (req, res) => {
   
@@ -134,7 +152,7 @@ router.post("/insertESXI", async (req, res) => {
   console.log("now in /insertESXI");
   const ESXI_PROPS = req.body;
   
-
+  const keySaved= await ssh.storeServerKey(ESXI_PROPS);
   const finish=await  ssh.check_ssh_enabled(ESXI_PROPS);
   if (finish) {
     const newID = await ESXIController.sqlInsertMachine(
