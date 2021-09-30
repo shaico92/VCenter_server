@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>how to install and use application</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <link rel='stylesheet' type='text/css' media='screen' href='main.css'>
+    <script src='main.js'></script>
+    <style>
+        li{
+            font-weight: bold;
+            width: fit-content;
+        }
+        div{
+            flex-direction: row;
+            display: flex;
+            
+            font-size: small;
+            border-style: dashed;
+            border-color: black;
+            border-width: 1px;
+        }
+
+    </style>
+</head>
+<body>
+    <div>
+        <div>
+            <h1>
+                server instructions   
+            </h1>
+            <ul>
+                <li>download and install nodejs</li><br>
+                <li>download and install .net 5 runtime 64-bit</li><br>
+                <li>open command line and type "node", there should be an output with node version number</li><br>
+                <li>open command line and type "dotnet", there should be an output with dotnet version number</li><br>
+                <li>in command line type- cd "c:\serverfolderPath"</li><br>
+                <li>in command line type- npm i</li><br>
+                <li>in command line type- cd "c:\serverfolderPath\enableRSAKey"</li><br>
+                <li>in command line type- dotnet build</li><br>
+                <li>in command line type- cd "c:\serverfolderPath\enableSSH"</li><br>
+                <li>in command line type- dotnet build</li><br>
+                <li>in folder c:\serverfolderPath\enableSSH\bin\Debug\net5.0 make sure chromedriver version matches server chrome version</li><br>
+                <li>in serverfolderPath open config.json</li><br>
+                <p style="color:green;">//input true if want to use hostname instead of localhost</p>
+                <p>"hostname":false,</p>
+                <p style="color:green;">//use enablessh.exe path with double backslashes</p>
+                <p>"enableSSHPath":"C:\\ESXI_VCenterClone-Server\\enableSSH\\bin\\Debug\\net5.0",</p>
+                <p style="color:green;">//use enableRSAKey.exe path with double backslashes</p>
+                <p>"enableRSAPath":"C:\\ESXI_VCenterClone-Server\\enableRSAKey\\bin\\Debug\\net5.0",</p>
+                <p style="color:green;">//use putty.exe path with double backslashes</p>
+                <p>"puttyPath":"C:\\ESXI_VCenterClone-Server",</p>
+                <p style="color:green;">//use plink.exe path with double backslashes</p>
+                <p>"plinkPath":"C:\\ESXI_VCenterClone-Server"</p>
+                <li>in command line type- in serverFolderPath root "node app.js"</li><br>
+            </ul>
+        </div>
+        
+    
+    <div>
+
+        <h1>
+            client instructions   
+        </h1>
+        <ul>
+            
+            <li>in command line type- cd "c:\clientfolderPath"</li><br>
+            <li>in command line type- npm i</li><br>
+            <li>to run front-end application type in command line- "npm start"</li><br>
+    
+        </ul>
+    </div>
+
+    </div>
+    <div>
+        <h1>Operation instructions</h1>
+        <ul>
+            <li>in order to add new hosts input in the new host form the ip/hostname of the esxi desired</li><br>
+            <li>if no ssh is enabled use the "enableSSH" button and input the desired data in order to add it</li><br>
+            <li>to delete hosts from the list of nodes simply drag the desired host to the trash bin</li><br>
+            <li>to see current power status of each VM click on the host arrow button</li><br>
+            
+        </ul>
+    </div>
+    
+
+</body>
+</html>
